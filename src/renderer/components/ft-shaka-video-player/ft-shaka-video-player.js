@@ -11,6 +11,7 @@ import { ScreenshotButton } from './player-components/ScreenshotButton'
 import { StatsButton } from './player-components/StatsButton'
 import { TheatreModeButton } from './player-components/TheatreModeButton'
 import { AutoplayToggle } from './player-components/AutoplayToggle'
+import { CastButton } from './player-components/CastButton'
 import { SkipButton } from './player-components/SkipButton'
 import {
   deduplicateAudioTracks,
@@ -255,6 +256,11 @@ export default defineComponent({
     /** @type {import('vue').ComputedRef<boolean>} */
     const displayVideoPlayButton = computed(() => {
       return store.getters.getDisplayVideoPlayButton
+    })
+
+    /** @type {import('vue').ComputedRef<boolean>} */
+    const enableCastPlayer = computed(() => {
+      return store.getters.getEnableCastPlayer
     })
 
     watch(displayVideoPlayButton, (newValue) => {
@@ -827,6 +833,7 @@ export default defineComponent({
           'ft_screenshot',
           'picture_in_picture',
           'ft_full_window',
+          ...(enableCastPlayer.value ? ['ft_cast'] : []),
           'recenter_vr',
           'toggle_stereoscopic',
         ]
@@ -842,6 +849,7 @@ export default defineComponent({
           'picture_in_picture',
           'ft_theatre_mode',
           'ft_full_window',
+          ...(enableCastPlayer.value ? ['ft_cast'] : []),
           'fullscreen'
         )
 
@@ -1787,6 +1795,18 @@ export default defineComponent({
       shakaOverflowMenu.registerElement('ft_audio_tracks', new AudioTrackSelectionFactory())
     }
 
+    function registerCastButton() {
+      /** @implements {shaka.extern.IUIElement.Factory} */
+      class CastButtonFactory {
+        create(rootElement, controls) {
+          return new CastButton(events, rootElement, controls)
+        }
+      }
+
+      shakaControls.registerElement('ft_cast', new CastButtonFactory())
+      shakaOverflowMenu.registerElement('ft_cast', new CastButtonFactory())
+    }
+
     function registerAutoplayToggle() {
       events.addEventListener('toggleAutoplay', () => {
         emit('toggle-autoplay')
@@ -1992,6 +2012,9 @@ export default defineComponent({
 
       shakaControls.registerElement('ft_skip_previous', null)
       shakaOverflowMenu.registerElement('ft_skip_previous', null)
+
+      shakaControls.registerElement('ft_cast', null)
+      shakaOverflowMenu.registerElement('ft_cast', null)
     }
 
     // #endregion custom player controls
@@ -2740,6 +2763,7 @@ export default defineComponent({
       registerLegacyQualitySelection()
       registerStatsButton()
       registerSkipButtons()
+      registerCastButton()
 
       if (ui.isMobile()) {
         onlyUseOverFlowMenu.value = true

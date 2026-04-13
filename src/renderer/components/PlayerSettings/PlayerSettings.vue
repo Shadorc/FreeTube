@@ -68,6 +68,12 @@
           @change="updateDisplayVideoPlayButton"
         />
         <FtToggleSwitch
+          :label="t('Settings.Player Settings.Enable Cast Player')"
+          :compact="true"
+          :default-value="enableCastPlayer"
+          @change="updateEnableCastPlayer"
+        />
+        <FtToggleSwitch
           :label="t('Settings.Player Settings.Enter Fullscreen on Display Rotate')"
           :compact="true"
           :default-value="enterFullscreenOnDisplayRotate"
@@ -369,6 +375,16 @@ const displayVideoPlayButton = computed(() => store.getters.getDisplayVideoPlayB
  */
 function updateDisplayVideoPlayButton(value) {
   store.dispatch('updateDisplayVideoPlayButton', value)
+}
+
+/** @type {import('vue').ComputedRef<boolean>} */
+const enableCastPlayer = computed(() => store.getters.getEnableCastPlayer)
+
+/**
+ * @param {boolean} value
+ */
+function updateEnableCastPlayer(value) {
+  store.dispatch('updateEnableCastPlayer', value)
 }
 
 /** @type {import('vue').ComputedRef<boolean>} */

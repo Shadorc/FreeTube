@@ -28,6 +28,7 @@ import packageDetails from '../../package.json'
 import { handleOpenInExternalPlayer } from './externalPlayer'
 import { generatePoToken } from './poTokenGenerator'
 import { isFreeTubeUrl } from './utils'
+import SSDPDeviceScanner from './cast/ssdpDevicesDiscovery.js'
 
 const brotliDecompressAsync = promisify(brotliDecompress)
 
@@ -2255,6 +2256,12 @@ function runApp() {
 
     browserWindow.webContents.send(IpcChannels.CHANGE_VIEW, path)
   }
+
+  // TODO: It should probably be a callback onDeviceDiscovered
+  ipcMain.handle(IpcChannels.DISCOVER_CAST_DEVICES, async () => {
+    const scanner = new SSDPDeviceScanner()
+    return await scanner.startScan()
+  })
 
   async function setMenu() {
     const sidenavSettings = baseHandlers.settings._findSidenavSettings()

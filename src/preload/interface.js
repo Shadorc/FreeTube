@@ -314,5 +314,9 @@ export default {
     ipcRenderer.on(IpcChannels.SYNC_SUBSCRIPTION_CACHE, (_, { event, data }) => {
       handler(event, data)
     })
+  },
+
+  discoverCastDevices: () => {
+    return ipcRenderer.invoke(IpcChannels.DISCOVER_CAST_DEVICES)
   }
 }
