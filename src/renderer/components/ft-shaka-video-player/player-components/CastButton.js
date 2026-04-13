@@ -2,6 +2,7 @@ import shaka from 'shaka-player'
 
 import i18n from '../../../i18n/index'
 import { PlayerIcons } from '../../../../constants'
+import { castStore, openCastPopover, stopCasting } from './castStore'
 
 export class CastButton extends shaka.ui.Element {
   /**
@@ -38,14 +39,18 @@ export class CastButton extends shaka.ui.Element {
     this.button_.appendChild(label)
     this.parent.appendChild(this.button_)
 
-    this.eventManager.listen(this.button_, 'click', async () => {
+    // listeners
 
-      try {
-        const devices = await window.ftElectron.discoverCastDevices()
-        console.log('Discovered devices:', devices)
-        // Handle devices here (show dialog, etc.)
-      } catch (error) {
-        console.error('Device discovery failed:', error)
+    this.eventManager.listen(document, 'ft-caststatuschanged', () => {
+      this.syncWithStore_()
+    })
+
+    this.eventManager.listen(this.button_, 'click', async () => {
+      if (castStore.activeDeviceId) {
+        await stopCasting()
+      } else {
+        const rect = this.button_.getBoundingClientRect()
+        openCastPopover(rect)
       }
     })
 
@@ -67,14 +72,14 @@ export class CastButton extends shaka.ui.Element {
   }
 
   /** @private */
-  updateLocalisedStrings_() {
-    const isCasting = false // this.castProxy_.isCasting()
-
-    this.nameSpan_.textContent = i18n.global.t('Video.Player.Cast')
+  syncWithStore_() {
+    const isCasting = castStore.activeDeviceId != null
 
     this.icon_.use(isCasting ? PlayerIcons.CAST_CONNECTED : PlayerIcons.CAST)
 
-    this.currentState_.textContent = this.localization.resolve(isCasting ? 'ON' : 'OFF')
+    this.currentState_.textContent = isCasting
+      ? castStore.activeDeviceName
+      : this.localization.resolve('OFF')
 
     this.button_.ariaLabel = isCasting
       ? i18n.global.t('Video.Player.Stop casting')
@@ -82,11 +87,17 @@ export class CastButton extends shaka.ui.Element {
   }
 
   /** @private */
+  updateLocalisedStrings_() {
+    this.nameSpan_.textContent = i18n.global.t('Video.Player.Cast')
+    this.syncWithStore_()
+  }
+
+  /** @private */
   updateSubmenuVisibility_() {
     if (this.isSubMenuOpened) {
       this.button_.classList.add('shaka-hidden')
     } else {
-      this.updateVisibilityFromAvailability_()
+      this.button_.classList.remove('shaka-hidden')
     }
   }
 }

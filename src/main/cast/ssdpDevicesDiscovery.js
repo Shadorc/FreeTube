@@ -104,7 +104,7 @@ class SSDPDeviceScanner {
         const device = {
             address: remoteInfo.address,
             location: locationUrl,
-            friendlyName: friendlyName
+            name: friendlyName
         }
 
         this.discoveredDevices.add(device)

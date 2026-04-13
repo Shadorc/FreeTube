@@ -451,9 +451,6 @@ Settings:
     Skip by Scrolling Over Video Player: Skip by Scrolling Over Video Player
     Display Play Button In Video Player: Display Play Button In Video Player
     Enable Cast Player: "Enable Cast Player"
-    Cast to TV: "Cast to TV"
-    Stop casting: "Stop casting"
-    Cast: "Cast"
     Enter Fullscreen on Display Rotate: Enter Fullscreen on Display Rotate
     Next Video Interval: Autoplay Countdown Timer
     Autoplay Interruption Timer: Autoplay Interruption Timer
@@ -920,6 +917,9 @@ Video:
     Autoplay is on: Autoplay is on
     Theatre Mode: Theater Mode
     Exit Theatre Mode: Exit Theater Mode
+    Cast to TV: Cast to TV
+    Stop casting: Stop casting
+    Cast: Cast
     Full Window: Full Window
     Exit Full Window: Exit Full Window
     Take Screenshot: Take Screenshot

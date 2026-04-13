@@ -13,6 +13,7 @@ import { TheatreModeButton } from './player-components/TheatreModeButton'
 import { AutoplayToggle } from './player-components/AutoplayToggle'
 import { CastButton } from './player-components/CastButton'
 import { SkipButton } from './player-components/SkipButton'
+import CastPopover from './player-components/CastPopover.vue'
 import {
   deduplicateAudioTracks,
   findMostSimilarAudioBandwidth,
@@ -66,6 +67,9 @@ const LOCALE_MAPPINGS = new Map(process.env.SHAKA_LOCALE_MAPPINGS)
 
 export default defineComponent({
   name: 'FtShakaVideoPlayer',
+  components: {
+    CastPopover,
+  },
   props: {
     format: {
       type: String,
