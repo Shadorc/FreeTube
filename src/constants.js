@@ -48,7 +48,8 @@ const IpcChannels = {
   OPEN_IN_EXTERNAL_PLAYER: 'open-in-external-player',
   OPEN_IN_EXTERNAL_PLAYER_RESULT: 'open-in-external-player-result',
 
-  DISCOVER_CAST_DEVICES: 'discover-cast-devices'
+  DISCOVER_CAST_DEVICES: 'discover-cast-devices',
+  CAST_DEVICE_DISCOVERED: 'cast-device-discovered'
 }
 
 const DBActions = {

@@ -42,15 +42,16 @@ export class CastButton extends shaka.ui.Element {
     // listeners
 
     this.eventManager.listen(document, 'ft-caststatuschanged', () => {
-      this.syncWithStore_()
+      this.updateLocalisedStrings_()
     })
 
     this.eventManager.listen(this.button_, 'click', async () => {
       if (castStore.activeDeviceId) {
         await stopCasting()
       } else {
-        const rect = this.button_.getBoundingClientRect()
-        openCastPopover(rect)
+        window.ftElectron.discoverCastDevice()
+        //const rect = this.button_.getBoundingClientRect()
+        //openCastPopover(rect)
       }
     })
 
@@ -72,7 +73,9 @@ export class CastButton extends shaka.ui.Element {
   }
 
   /** @private */
-  syncWithStore_() {
+  updateLocalisedStrings_() {
+    this.nameSpan_.textContent = i18n.global.t('Video.Player.Cast')
+
     const isCasting = castStore.activeDeviceId != null
 
     this.icon_.use(isCasting ? PlayerIcons.CAST_CONNECTED : PlayerIcons.CAST)
@@ -84,12 +87,6 @@ export class CastButton extends shaka.ui.Element {
     this.button_.ariaLabel = isCasting
       ? i18n.global.t('Video.Player.Stop casting')
       : i18n.global.t('Video.Player.Cast to TV')
-  }
-
-  /** @private */
-  updateLocalisedStrings_() {
-    this.nameSpan_.textContent = i18n.global.t('Video.Player.Cast')
-    this.syncWithStore_()
   }
 
   /** @private */

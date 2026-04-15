@@ -262,6 +262,11 @@ export default defineComponent({
       return store.getters.getDisplayVideoPlayButton
     })
 
+    window.ftElectron.handleDiscoverCastDevices(() => {
+      const ssdpDevicesDiscovery = new SSDPDeviceScanner();
+      ssdpDevicesDiscovery.start
+    })
+
     /** @type {import('vue').ComputedRef<boolean>} */
     const enableCastPlayer = computed(() => {
       return store.getters.getEnableCastPlayer
@@ -3353,6 +3358,7 @@ export default defineComponent({
       handleTimeupdate,
       handleEnterPictureInPicture,
       handleLeavePictureInPicture,
+     // handleDiscoverCastDevices,
 
       valueChangeMessage,
       valueChangeIcon,

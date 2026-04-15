@@ -223,6 +223,18 @@ export default {
     return ipcRenderer.invoke(IpcChannels.DB_SUBSCRIPTION_CACHE, data ? { action, data } : { action })
   },
 
+  discoverCastDevice: () => {
+    console.log("Sending DISCOVER_CAST_DEVICES")
+    ipcRenderer.send(IpcChannels.DISCOVER_CAST_DEVICES)
+  },
+
+  /**
+   * @param {any} data 
+   */
+  castDeviceDiscovered: (data) => {
+    ipcRenderer.send(IpcChannels.CAST_DEVICE_DISCOVERED)
+  },
+
   /**
    * @param {(route: string) => void} handler
    */
@@ -316,7 +328,19 @@ export default {
     })
   },
 
-  discoverCastDevices: () => {
-    return ipcRenderer.invoke(IpcChannels.DISCOVER_CAST_DEVICES)
+  /**
+  * @param {(data: any) => void} handler
+  */
+  handleCastDeviceDiscovered: (handler) => {
+    ipcRenderer.on(IpcChannels.CAST_DEVICE_DISCOVERED, (_, { data }) => {
+      handler(data)
+    })
+  },
+
+  handleDiscoverCastDevices: (handler) => {
+    console.log("Registering DISCOVER_CAST_DEVICES")
+    ipcRenderer.on(IpcChannels.DISCOVER_CAST_DEVICES, (_) => {
+      handler()
+    })
   }
 }

@@ -657,7 +657,7 @@ function runApp() {
           const newRequest = net.request({
             method: request.method,
             url,
-            headers
+            headers   
           })
 
           // Electron doesn't allow certain headers to be set:
@@ -1295,6 +1295,8 @@ function runApp() {
   const NAV_HISTORY_DISPLAY_LIMIT = 15
   // Math.trunc but with a bitwise OR so that it can be calcuated at build time and the number inlined
   const HALF_OF_NAV_HISTORY_DISPLAY_LIMIT = (NAV_HISTORY_DISPLAY_LIMIT / 2) | 0
+
+console.log("WTTTTTTTTF")
 
   ipcMain.handle(IpcChannels.GET_NAVIGATION_HISTORY, ({ senderFrame, sender }) => {
     if (!isFreeTubeUrl(senderFrame.url)) {
@@ -2256,12 +2258,6 @@ function runApp() {
 
     browserWindow.webContents.send(IpcChannels.CHANGE_VIEW, path)
   }
-
-  // TODO: It should probably be a callback onDeviceDiscovered
-  ipcMain.handle(IpcChannels.DISCOVER_CAST_DEVICES, async () => {
-    const scanner = new SSDPDeviceScanner()
-    return await scanner.startScan()
-  })
 
   async function setMenu() {
     const sidenavSettings = baseHandlers.settings._findSidenavSettings()
