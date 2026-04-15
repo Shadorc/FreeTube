@@ -16,10 +16,10 @@ ST:urn:dial-multiscreen-org:service:dial:1\r
 `
 
 class SSDPDeviceScanner {
-  constructor(onDeviceDiscovered) {
-    this.onDeviceDiscovered_ = onDeviceDiscovered
+  constructor() {
     this.socket = dgram.createSocket({ type: 'udp4', reuseAddr: true })
     this.discoveredLocations_ = new Set()
+    this.onDeviceDiscovered = null
   }
 
   /** @private */
@@ -88,6 +88,10 @@ class SSDPDeviceScanner {
 
   /** @private */
   async handleDeviceDiscovery_(message, remoteInfo) {
+    if (!message) {
+      return
+    }
+
     const headers = this.parseResponseHeaders_(message)
     const locationUrl = headers.LOCATION
 
@@ -113,16 +117,13 @@ class SSDPDeviceScanner {
       type: headers.SERVER ?? headers.ST ?? 'cast-device'
     }
 
-    this.onDeviceDiscovered_(device)
+    if (this.onDeviceDiscovered) {
+      this.onDeviceDiscovered(device)
+    }
   }
 
   startScan() {
-    this.socket.on('message', (message, remoteInfo) => {
-      this.handleDeviceDiscovery_(message, remoteInfo)
-        .catch((error) => {
-          console.error('Error during device discovery:', error)
-        })
-    })
+    this.socket.on('message', this.handleDeviceDiscovery_)
 
     this.socket.bind(0, () => {
       const searchMessage = Buffer.from(M_SEARCH_REQUEST)
@@ -134,7 +135,8 @@ class SSDPDeviceScanner {
 
       setTimeout(() => {
         this.socket.close()
-      }, SSDP_SCAN_DURATION_MS)
+      },
+      SSDP_SCAN_DURATION_MS)
     })
   }
 }

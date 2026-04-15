@@ -880,7 +880,7 @@ function runApp() {
       windowStartupUrl = null,
       showWindowNow = false,
       searchQueryText = null
-    } = { }) {
+    } = {}) {
     // Syncing new window background to theme choice.
     const windowBackground = await baseHandlers.settings._findOne('baseTheme').then((setting) => {
       if (!setting) {
@@ -1412,7 +1412,7 @@ function runApp() {
       try {
         await asyncFs.access(path.normalize(folderPath), fsConstants.W_OK)
         directory = folderPath
-      } catch {}
+      } catch { }
     }
 
     // if setting is not set or we do not have write access to the folder
@@ -1656,7 +1656,7 @@ function runApp() {
               break
 
             default:
-              // Do nothing for unmatched settings
+            // Do nothing for unmatched settings
           }
           return null
 
@@ -1924,7 +1924,7 @@ function runApp() {
   // *********** //
 
   // ************** //
-  // Google Cast
+  // Cast
   /** @type {Map<number, { sessionUrl: string | null, deviceId: string }>} */
   const activeCastSessions = new Map()
 
@@ -1933,9 +1933,10 @@ function runApp() {
       return
     }
 
-    const scanner = new SSDPDeviceScanner((device) => {
+    const scanner = new SSDPDeviceScanner()
+    scanner.onDeviceDiscovered = (device) => {
       event.sender.send(IpcChannels.CAST_DEVICE_DISCOVERED, device)
-    })
+    }
 
     scanner.startScan()
   })
@@ -2265,7 +2266,7 @@ function runApp() {
 
   function baseUrl(arg) {
     let newArg = arg.replace('freetube://', '')
-    // add support for authority free url
+      // add support for authority free url
       .replace('freetube:', '')
 
     // fix for Qt URL, like `freetube://https//www.youtube.com/watch?v=...`

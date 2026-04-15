@@ -3363,7 +3363,6 @@ export default defineComponent({
       handleTimeupdate,
       handleEnterPictureInPicture,
       handleLeavePictureInPicture,
-      // handleDiscoverCastDevices,
 
       valueChangeMessage,
       valueChangeIcon,
