@@ -16,9 +16,10 @@ ST:urn:dial-multiscreen-org:service:dial:1\r
 `
 
 class SSDPDeviceScanner {
-  constructor() {
-    console.log("SSDPDeviceScanner")
+  constructor(onDeviceDiscovered) {
+    this.onDeviceDiscovered_ = onDeviceDiscovered
     this.socket = dgram.createSocket({ type: 'udp4', reuseAddr: true })
+    this.discoveredLocations_ = new Set()
   }
 
   /** @private */
@@ -90,9 +91,11 @@ class SSDPDeviceScanner {
     const headers = this.parseResponseHeaders_(message)
     const locationUrl = headers.LOCATION
 
-    if (!locationUrl) {
+    if (!locationUrl || this.discoveredLocations_.has(locationUrl)) {
       return
     }
+
+    this.discoveredLocations_.add(locationUrl)
 
     const xmlDescription = await this.fetchDeviceDescription_(locationUrl)
     if (!xmlDescription) {
@@ -102,19 +105,18 @@ class SSDPDeviceScanner {
     const friendlyName = this.extractFriendlyName_(xmlDescription)
 
     const device = {
+      id: locationUrl,
       address: remoteInfo.address,
       location: locationUrl,
-      name: friendlyName
+      applicationUrl: headers['APPLICATION-URL'] ?? null,
+      name: friendlyName ?? remoteInfo.address,
+      type: headers.SERVER ?? headers.ST ?? 'cast-device'
     }
 
-    console.log("Device discovered", device)
-
-    window.ftElectron.castDeviceDiscovered(device)
+    this.onDeviceDiscovered_(device)
   }
 
   startScan() {
-    console.log("Starting scan")
-
     this.socket.on('message', (message, remoteInfo) => {
       this.handleDeviceDiscovery_(message, remoteInfo)
         .catch((error) => {

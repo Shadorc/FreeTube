@@ -14,6 +14,7 @@ import { AutoplayToggle } from './player-components/AutoplayToggle'
 import { CastButton } from './player-components/CastButton'
 import { SkipButton } from './player-components/SkipButton'
 import CastPopover from './player-components/CastPopover.vue'
+import { setCastMediaDetails } from './player-components/castStore'
 import {
   deduplicateAudioTracks,
   findMostSimilarAudioBandwidth,
@@ -223,6 +224,15 @@ export default defineComponent({
     }
 
     const showStats = ref(false)
+
+    watch(
+      () => [props.videoId, props.title],
+      ([videoId, title]) => {
+        setCastMediaDetails({ videoId, title })
+      },
+      { immediate: true }
+    )
+
     const stats = reactive({
       resolution: {
         width: 0,
@@ -260,11 +270,6 @@ export default defineComponent({
     /** @type {import('vue').ComputedRef<boolean>} */
     const displayVideoPlayButton = computed(() => {
       return store.getters.getDisplayVideoPlayButton
-    })
-
-    window.ftElectron.handleDiscoverCastDevices(() => {
-      const ssdpDevicesDiscovery = new SSDPDeviceScanner();
-      ssdpDevicesDiscovery.start
     })
 
     /** @type {import('vue').ComputedRef<boolean>} */
@@ -3358,7 +3363,7 @@ export default defineComponent({
       handleTimeupdate,
       handleEnterPictureInPicture,
       handleLeavePictureInPicture,
-     // handleDiscoverCastDevices,
+      // handleDiscoverCastDevices,
 
       valueChangeMessage,
       valueChangeIcon,

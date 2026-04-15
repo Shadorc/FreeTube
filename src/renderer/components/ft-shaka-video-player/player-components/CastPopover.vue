@@ -2,8 +2,9 @@
   <Teleport to="body">
     <!-- Backdrop (click-outside) -->
     <Transition name="cast-backdrop">
-      <div
+      <button
         v-if="castStore.isOpen"
+        type="button"
         class="cast-popover__backdrop"
         @click="closeCastPopover"
       />
@@ -41,9 +42,11 @@
           {{ castStore.error }}
           <button
             class="cast-popover__retry"
+            :aria-label="$t('Video.Player.Retry')"
+            :title="$t('Video.Player.Retry')"
             @click="retry"
           >
-            {{ $t('Video.Player.Retry') }}
+            <font-awesome-icon :icon="['fas', 'rotate-right']" />
           </button>
         </div>
 
@@ -56,9 +59,11 @@
           {{ $t('Video.Player.No devices found') }}
           <button
             class="cast-popover__retry"
+            :aria-label="$t('Video.Player.Retry')"
+            :title="$t('Video.Player.Retry')"
             @click="retry"
           >
-            {{ $t('Video.Player.Retry') }}
+            <font-awesome-icon :icon="['fas', 'rotate-right']" />
           </button>
         </div>
 
@@ -89,8 +94,10 @@
             <span
               v-if="castStore.activeDeviceId === device.id"
               class="cast-popover__active-badge"
+              :aria-label="$t('Video.Player.Connected')"
+              :title="$t('Video.Player.Connected')"
             >
-              {{ $t('Video.Player.Connected') }}
+              <font-awesome-icon :icon="['fas', 'check']" />
             </span>
           </li>
         </ul>
@@ -121,22 +128,28 @@
 </template>
 
 <script>
-import { defineComponent, ref, computed, onMounted, onUnmounted } from 'vue'
-import { castStore, openCastPopover, connectToDevice, stopCasting as doStop, closeCastPopover } from './castStore'
+import { computed, defineComponent, onMounted, onUnmounted } from 'vue'
+import {
+  castStore,
+  openCastPopover,
+  connectToDevice,
+  stopCasting as doStop,
+  closeCastPopover,
+} from './castStore'
 
 export default defineComponent({
   name: 'CastPopover',
 
   setup() {
-    const popoverRef = ref(null)
-
     const POPOVER_WIDTH = 300
-    const POPOVER_OFFSET = 12 // gap between button top and popover bottom
+    const POPOVER_OFFSET = 12
 
     // Position the popover above the anchor button, centred on it
     const popoverStyle = computed(() => {
       const rect = castStore.anchorRect
-      if (!rect) return { display: 'none' }
+      if (!rect) {
+        return { display: 'none' }
+      }
 
       const vpW = window.innerWidth
 
@@ -156,13 +169,20 @@ export default defineComponent({
     // Arrow sits at the bottom of the popover, pointing down at the button
     const arrowStyle = computed(() => {
       const rect = castStore.anchorRect
-      if (!rect) return {}
+      if (!rect) {
+        return {}
+      }
+
       const vpW = window.innerWidth
-      const clampedLeft = Math.max(8, Math.min(
-        rect.left + rect.width / 2 - POPOVER_WIDTH / 2,
-        vpW - POPOVER_WIDTH - 8
-      ))
-      const arrowLeft = (rect.left + rect.width / 2) - clampedLeft
+      const clampedLeft = Math.max(
+        8,
+        Math.min(
+          rect.left + rect.width / 2 - POPOVER_WIDTH / 2,
+          vpW - POPOVER_WIDTH - 8
+        )
+      )
+      const arrowLeft = rect.left + rect.width / 2 - clampedLeft
+
       return { left: `${arrowLeft}px` }
     })
 
@@ -183,23 +203,39 @@ export default defineComponent({
     }
 
     function onKeydown(e) {
-      if (e.key === 'Escape' && castStore.isOpen) closeCastPopover()
+      if (e.key === 'Escape' && castStore.isOpen) {
+        closeCastPopover()
+      }
     }
 
-    onMounted(() => window.addEventListener('keydown', onKeydown))
-    onUnmounted(() => window.removeEventListener('keydown', onKeydown))
+    onMounted(() => {
+      window.addEventListener('keydown', onKeydown)
+    })
+
+    onUnmounted(() => {
+      window.removeEventListener('keydown', onKeydown)
+    })
 
     function deviceIcon(device) {
-      const t = (device.type ?? '').toLowerCase()
-      if (t.includes('tv') || t.includes('chromecast')) return ['fas', 'tv']
-      if (t.includes('speaker') || t.includes('audio')) return ['fas', 'volume-high']
-      if (t.includes('phone') || t.includes('mobile')) return ['fas', 'mobile']
+      const type = (device.type ?? '').toLowerCase()
+
+      if (type.includes('tv') || type.includes('chromecast')) {
+        return ['fas', 'tv']
+      }
+
+      if (type.includes('speaker') || type.includes('audio')) {
+        return ['fas', 'volume-high']
+      }
+
+      if (type.includes('phone') || type.includes('mobile')) {
+        return ['fas', 'mobile']
+      }
+
       return ['fas', 'display']
     }
 
     return {
       castStore,
-      popoverRef,
       popoverStyle,
       arrowStyle,
       handleDeviceClick,
@@ -208,7 +244,7 @@ export default defineComponent({
       closeCastPopover,
       deviceIcon,
     }
-  }
+  },
 })
 </script>
 

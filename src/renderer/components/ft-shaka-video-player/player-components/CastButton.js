@@ -49,9 +49,8 @@ export class CastButton extends shaka.ui.Element {
       if (castStore.activeDeviceId) {
         await stopCasting()
       } else {
-        window.ftElectron.discoverCastDevice()
-        //const rect = this.button_.getBoundingClientRect()
-        //openCastPopover(rect)
+        const rect = this.button_.getBoundingClientRect()
+        await openCastPopover(rect)
       }
     })
 

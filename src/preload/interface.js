@@ -224,15 +224,15 @@ export default {
   },
 
   discoverCastDevice: () => {
-    console.log("Sending DISCOVER_CAST_DEVICES")
     ipcRenderer.send(IpcChannels.DISCOVER_CAST_DEVICES)
   },
 
-  /**
-   * @param {any} data 
-   */
-  castDeviceDiscovered: (data) => {
-    ipcRenderer.send(IpcChannels.CAST_DEVICE_DISCOVERED)
+  connectCastDevice: (device, videoId) => {
+    return ipcRenderer.invoke(IpcChannels.CONNECT_CAST_DEVICE, device, videoId)
+  },
+
+  stopCasting: () => {
+    return ipcRenderer.invoke(IpcChannels.STOP_CASTING)
   },
 
   /**
@@ -329,18 +329,11 @@ export default {
   },
 
   /**
-  * @param {(data: any) => void} handler
-  */
+   * @param {(data: any) => void} handler
+   */
   handleCastDeviceDiscovered: (handler) => {
-    ipcRenderer.on(IpcChannels.CAST_DEVICE_DISCOVERED, (_, { data }) => {
+    ipcRenderer.on(IpcChannels.CAST_DEVICE_DISCOVERED, (_, data) => {
       handler(data)
     })
   },
-
-  handleDiscoverCastDevices: (handler) => {
-    console.log("Registering DISCOVER_CAST_DEVICES")
-    ipcRenderer.on(IpcChannels.DISCOVER_CAST_DEVICES, (_) => {
-      handler()
-    })
-  }
 }

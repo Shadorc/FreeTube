@@ -29,6 +29,7 @@ import { handleOpenInExternalPlayer } from './externalPlayer'
 import { generatePoToken } from './poTokenGenerator'
 import { isFreeTubeUrl } from './utils'
 import SSDPDeviceScanner from './cast/ssdpDevicesDiscovery.js'
+import { launchYouTubeApp, stopDialApp } from './cast/dialClient.js'
 
 const brotliDecompressAsync = promisify(brotliDecompress)
 
@@ -657,7 +658,7 @@ function runApp() {
           const newRequest = net.request({
             method: request.method,
             url,
-            headers   
+            headers
           })
 
           // Electron doesn't allow certain headers to be set:
@@ -1296,8 +1297,6 @@ function runApp() {
   // Math.trunc but with a bitwise OR so that it can be calcuated at build time and the number inlined
   const HALF_OF_NAV_HISTORY_DISPLAY_LIMIT = (NAV_HISTORY_DISPLAY_LIMIT / 2) | 0
 
-console.log("WTTTTTTTTF")
-
   ipcMain.handle(IpcChannels.GET_NAVIGATION_HISTORY, ({ senderFrame, sender }) => {
     if (!isFreeTubeUrl(senderFrame.url)) {
       return
@@ -1923,6 +1922,59 @@ console.log("WTTTTTTTTF")
   })
 
   // *********** //
+
+  // ************** //
+  // Google Cast
+  /** @type {Map<number, { sessionUrl: string | null, deviceId: string }>} */
+  const activeCastSessions = new Map()
+
+  ipcMain.on(IpcChannels.DISCOVER_CAST_DEVICES, (event) => {
+    if (!isFreeTubeUrl(event.senderFrame.url)) {
+      return
+    }
+
+    const scanner = new SSDPDeviceScanner((device) => {
+      event.sender.send(IpcChannels.CAST_DEVICE_DISCOVERED, device)
+    })
+
+    scanner.startScan()
+  })
+
+  ipcMain.handle(IpcChannels.CONNECT_CAST_DEVICE, async (event, device, videoId) => {
+    if (!isFreeTubeUrl(event.senderFrame.url)) {
+      return
+    }
+
+    const existingSession = activeCastSessions.get(event.sender.id)
+
+    if (existingSession?.sessionUrl) {
+      await stopDialApp(existingSession.sessionUrl)
+    }
+
+    const { sessionUrl } = await launchYouTubeApp(device, videoId)
+
+    activeCastSessions.set(event.sender.id, {
+      sessionUrl,
+      deviceId: device.id
+    })
+
+    return { sessionUrl }
+  })
+
+  ipcMain.handle(IpcChannels.STOP_CASTING, async (event) => {
+    if (!isFreeTubeUrl(event.senderFrame.url)) {
+      return
+    }
+
+    const session = activeCastSessions.get(event.sender.id)
+
+    if (!session) {
+      return
+    }
+
+    await stopDialApp(session.sessionUrl)
+    activeCastSessions.delete(event.sender.id)
+  })
 
   // ************** //
   // Search History

@@ -16,6 +16,9 @@ export const castStore = reactive({
   /** @type {boolean} Whether the device-list popup is visible */
   isOpen: false,
 
+  /** @type {boolean} Whether device discovery is in progress */
+  isDiscovering: false,
+
   /** @type {{ id: string, name: string, type: string, address: string }[]} */
   devices: [],
 
@@ -28,12 +31,37 @@ export const castStore = reactive({
   /** @type {string | null} Human-readable discovery/cast error */
   error: null,
 
+  /** @type {string | null} Current video id for DIAL launch */
+  videoId: null,
+
+  /** @type {string | null} Current video title */
+  videoTitle: null,
+
   /**
    * Anchor rect used to position the popover near the cast button.
    * @type {DOMRect | null}
    */
   anchorRect: null,
 })
+
+let castDiscoveryListenerRegistered = false
+
+function ensureCastDiscoveryListener() {
+  if (castDiscoveryListenerRegistered) {
+    return
+  }
+
+  window.ftElectron.handleCastDeviceDiscovered((device) => {
+    if (!device || castStore.devices.some(({ id }) => id === device.id)) {
+      return
+    }
+
+    castStore.devices.push(device)
+    castStore.isDiscovering = false
+  })
+
+  castDiscoveryListenerRegistered = true
+}
 
 /** Notify all listeners (Shaka button, etc.) that cast status has changed */
 function dispatchCastStatusChanged() {
@@ -47,21 +75,30 @@ function dispatchCastStatusChanged() {
 
 /** Open the popover and kick off device discovery */
 export async function openCastPopover(anchorRect) {
+  ensureCastDiscoveryListener()
+
   castStore.anchorRect = anchorRect
   castStore.isOpen = true
   castStore.error = null
   castStore.devices = []
+  castStore.isDiscovering = true
 
-  window.ftElectron.handleCastDeviceDiscovered((event, data) => {
-    castStore.devices.push(data)
-  })
+  window.ftElectron.discoverCastDevice()
+
+  setTimeout(() => {
+    castStore.isDiscovering = false
+  }, 5500)
 }
 
 /** Connect to a specific device */
 export async function connectToDevice(device) {
   castStore.error = null
   try {
-    await window.ftElectron.connectCastDevice(device.id)
+    if (typeof castStore.videoId !== 'string' || castStore.videoId.length === 0) {
+      throw new Error('No video is available to cast')
+    }
+
+    await window.ftElectron.connectCastDevice(device, castStore.videoId)
     castStore.activeDeviceId = device.id
     castStore.activeDeviceName = device.name
     castStore.isOpen = false
@@ -89,4 +126,9 @@ export async function stopCasting() {
 /** Close the popover without disconnecting */
 export function closeCastPopover() {
   castStore.isOpen = false
+}
+
+export function setCastMediaDetails({ videoId, title }) {
+  castStore.videoId = typeof videoId === 'string' && videoId.length > 0 ? videoId : null
+  castStore.videoTitle = typeof title === 'string' && title.length > 0 ? title : null
 }
