@@ -1,0 +1,237 @@
+/* ── Popover shell ── */
+.cast-popover {
+  /* Variables */
+  --cp-bg: #1c1c1c;
+  --cp-text: #fff;
+  --cp-text-muted: #888;
+  --cp-border: rgb(255 255 255 / 8%);
+  --cp-accent: #4fc3a1;
+  --cp-accent-stop: #e05555;
+  --cp-item-hover: rgb(255 255 255 / 6%);
+  --cp-active-bg: rgb(79 195 161 / 12%);
+  --cp-radius: 16px;
+  --cp-shadow: 0 8px 40px rgb(0 0 0 / 70%), 0 2px 8px rgb(0 0 0 / 40%);
+
+  /* Styling */
+  z-index: 9999;
+  background: var(--cp-bg);
+  border-radius: var(--cp-radius);
+  box-shadow: var(--cp-shadow);
+  color: var(--cp-text);
+  font-family: inherit;
+  max-block-size: 420px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* ── Backdrop ── */
+.cast-popover__backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 9998;
+}
+
+/* ── Drag handle ── */
+.cast-popover__handle {
+  inline-size: 36px;
+  block-size: 4px;
+  background: rgb(255 255 255 / 20%);
+  border-radius: 2px;
+  margin-block: 10px 0;
+  margin-inline: auto;
+  flex-shrink: 0;
+}
+
+/* ── Header ── */
+.cast-popover__header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding-block: 14px 8px;
+  padding-inline: 20px;
+  flex-shrink: 0;
+}
+
+.cast-popover__title {
+  font-size: 19px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  line-height: 1.2;
+}
+
+/* ── Spinner ── */
+.cast-popover__spinner {
+  display: inline-block;
+  inline-size: 20px;
+  block-size: 20px;
+  border: 2.5px solid rgb(255 255 255 / 15%);
+  border-block-start-color: rgb(255 255 255 / 75%);
+  border-radius: 50%;
+  animation: cp-spin 0.8s linear infinite;
+  flex-shrink: 0;
+}
+
+@keyframes cp-spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ── Status states ── */
+.cast-popover__status {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding-block: 24px;
+  padding-inline: 20px;
+  color: var(--cp-text-muted);
+  font-size: 14px;
+  text-align: center;
+}
+
+.cast-popover__status--error { color: #e07070; }
+
+/* ── Retry ── */
+.cast-popover__retry {
+  background: none;
+  border: 1px solid var(--cp-border);
+  color: var(--cp-accent);
+  cursor: pointer;
+  padding-block: 5px;
+  padding-inline: 16px;
+  border-radius: 20px;
+  font-size: 12px;
+  margin-block-start: 4px;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.cast-popover__retry:hover {
+  background: rgb(79 195 161 / 10%);
+  border-color: var(--cp-accent);
+}
+
+/* ── Device list ── */
+.cast-popover__list {
+  list-style: none;
+  margin-block: 6px 0;
+  margin-inline: 0;
+  padding-block: 0 10px;
+  padding-inline: 10px;
+  overflow-y: auto;
+  flex: 1;
+  scrollbar-width: thin;
+  scrollbar-color: rgb(255 255 255 / 12%) transparent;
+}
+
+.cast-popover__item {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding-block: 12px;
+  padding-inline: 10px;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: background 0.15s;
+  outline: none;
+}
+
+.cast-popover__item:hover,
+.cast-popover__item:focus-visible { background: var(--cp-item-hover); }
+.cast-popover__item--active { background: var(--cp-active-bg); }
+
+/* ── Device icon ── */
+.cast-popover__device-icon {
+  inline-size: 32px;
+  block-size: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  font-size: 20px;
+  color: var(--cp-text);
+}
+
+/* ── Device name ── */
+.cast-popover__device-name {
+  flex: 1;
+  font-size: 17px;
+  font-weight: 400;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ── Active badge ── */
+.cast-popover__active-badge {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--cp-accent);
+  background: rgb(79 195 161 / 15%);
+  border: 1px solid rgb(79 195 161 / 30%);
+  border-radius: 10px;
+  padding-block: 2px;
+  padding-inline: 8px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+/* ── Stop footer ── */
+.cast-popover__footer {
+  border-block-start: 1px solid var(--cp-border);
+  padding-block: 8px;
+  padding-inline: 10px;
+  flex-shrink: 0;
+}
+
+.cast-popover__stop {
+  inline-size: 100%;
+  background: rgb(224 85 85 / 10%);
+  border: 1px solid rgb(224 85 85 / 25%);
+  color: var(--cp-accent-stop);
+  cursor: pointer;
+  padding: 9px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.cast-popover__stop:hover {
+  background: rgb(224 85 85 / 20%);
+  border-color: rgb(224 85 85 / 50%);
+}
+
+/* ── Arrow (points down toward the button) ── */
+.cast-popover__arrow {
+  position: absolute;
+  inset-block-end: -6px;
+  inline-size: 12px;
+  block-size: 12px;
+  background: var(--cp-bg);
+  border-inline-end: 1px solid rgb(255 255 255 / 6%);
+  border-block-end: 1px solid rgb(255 255 255 / 6%);
+  transform: translateX(-50%) rotate(45deg);
+  pointer-events: none;
+}
+
+/* ── Transitions ── */
+.cast-backdrop-enter-active,
+.cast-backdrop-leave-active { transition: opacity 0.2s ease; }
+
+.cast-backdrop-enter-from,
+.cast-backdrop-leave-to { opacity: 0; }
+
+.cast-sheet-enter-active,
+.cast-sheet-leave-active {
+  transition: opacity 0.18s ease, transform 0.18s ease;
+}
+
+.cast-sheet-enter-from,
+.cast-sheet-leave-to {
+  opacity: 0;
+  transform: translateY(8px);
+}

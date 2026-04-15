@@ -123,7 +123,9 @@ class SSDPDeviceScanner {
   }
 
   startScan() {
-    this.socket.on('message', this.handleDeviceDiscovery_)
+    this.socket.on('message', (message, remoteInfo) => {
+      this.handleDeviceDiscovery_(message, remoteInfo)
+    })
 
     this.socket.bind(0, () => {
       const searchMessage = Buffer.from(M_SEARCH_REQUEST)

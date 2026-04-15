@@ -123,7 +123,6 @@
         {{ $t('Video.Player.Skipped segment', { segmentCategory: translatedCategory }) }}
       </p>
     </div>
-    <CastPopover />
   </div>
 </template>
 

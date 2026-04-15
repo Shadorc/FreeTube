@@ -223,6 +223,7 @@
         @pause-player="pausePlayer"
       />
     </div>
+    <FtCastPopover />
   </div>
 </template>
 
