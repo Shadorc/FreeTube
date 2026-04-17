@@ -115,20 +115,13 @@
             {{ $t('Video.Player.Stop casting') }}
           </button>
         </div>
-
-        <!-- Arrow pointing down toward the button -->
-        <span
-          class="cast-popover__arrow"
-          :style="arrowStyle"
-          aria-hidden="true"
-        />
       </div>
     </Transition>
   </Teleport>
 </template>
 
-<script>
-import { computed, defineComponent, onMounted, onUnmounted } from 'vue'
+<script setup>
+import { computed, onMounted, onUnmounted } from 'vue'
 import {
   castStore,
   openCastPopover,
@@ -137,112 +130,81 @@ import {
   closeCastPopover,
 } from '../ft-shaka-video-player/player-components/castStore'
 
-export default defineComponent({
-  setup() {
-    const POPOVER_WIDTH = 300
-    const POPOVER_OFFSET = 12
+const POPOVER_WIDTH = 300
+const POPOVER_OFFSET = 12
 
-    // Position the popover above the anchor button, centred on it
-    const popoverStyle = computed(() => {
-      const rect = castStore.anchorRect
-      if (!rect) {
-        return { display: 'none' }
-      }
+// Position the popover above the anchor button, centred on it
+const popoverStyle = computed(() => {
+  const rect = castStore.anchorRect
+  if (!rect) {
+    return { display: 'none' }
+  }
 
-      const vpW = window.innerWidth
+  const vpW = window.innerWidth
 
-      let left = rect.left + rect.width / 2 - POPOVER_WIDTH / 2
-      left = Math.max(8, Math.min(left, vpW - POPOVER_WIDTH - 8))
+  let left = rect.left + rect.width / 2 - POPOVER_WIDTH / 2
+  left = Math.max(8, Math.min(left, vpW - POPOVER_WIDTH - 8))
 
-      const bottom = window.innerHeight - rect.top + POPOVER_OFFSET
+  const bottom = window.innerHeight - rect.top + POPOVER_OFFSET
 
-      return {
-        position: 'fixed',
-        width: `${POPOVER_WIDTH}px`,
-        bottom: `${bottom}px`,
-        left: `${left}px`,
-      }
-    })
+  return {
+    position: 'fixed',
+    width: `${POPOVER_WIDTH}px`,
+    bottom: `${bottom}px`,
+    left: `${left}px`,
+  }
+})
 
-    // Arrow sits at the bottom of the popover, pointing down at the button
-    const arrowStyle = computed(() => {
-      const rect = castStore.anchorRect
-      if (!rect) {
-        return {}
-      }
+async function handleDeviceClick(device) {
+  if (castStore.activeDeviceId === device.id) {
+    await doStop()
+  } else {
+    await connectToDevice(device)
+  }
+}
 
-      const vpW = window.innerWidth
-      const clampedLeft = Math.max(
-        8,
-        Math.min(
-          rect.left + rect.width / 2 - POPOVER_WIDTH / 2,
-          vpW - POPOVER_WIDTH - 8
-        )
-      )
-      const arrowLeft = rect.left + rect.width / 2 - clampedLeft
+async function retry() {
+  await openCastPopover(castStore.anchorRect)
+}
 
-      return { left: `${arrowLeft}px` }
-    })
+async function stopCasting() {
+  await doStop()
+}
 
-    async function handleDeviceClick(device) {
-      if (castStore.activeDeviceId === device.id) {
-        await doStop()
-      } else {
-        await connectToDevice(device)
-      }
-    }
+function onKeydown(e) {
+  if (e.key === 'Escape' && castStore.isOpen) {
+    closeCastPopover()
+  }
+}
 
-    async function retry() {
-      await openCastPopover(castStore.anchorRect)
-    }
+/**
+ * @param {object} device - The device object
+ * @returns {string[]} - Font Awesome icon array [family, name]
+ */
+function deviceIcon(device) {
+  const type = (device.type ?? '').toLowerCase()
 
-    async function stopCasting() {
-      await doStop()
-    }
+  if (type.includes('tv') || type.includes('chromecast')) {
+    return ['fas', 'tv']
+  }
 
-    function onKeydown(e) {
-      if (e.key === 'Escape' && castStore.isOpen) {
-        closeCastPopover()
-      }
-    }
+  if (type.includes('speaker') || type.includes('audio')) {
+    return ['fas', 'volume-high']
+  }
 
-    onMounted(() => {
-      window.addEventListener('keydown', onKeydown)
-    })
+  if (type.includes('phone') || type.includes('mobile')) {
+    return ['fas', 'mobile']
+  }
 
-    onUnmounted(() => {
-      window.removeEventListener('keydown', onKeydown)
-    })
+  return ['fas', 'display']
+}
 
-    function deviceIcon(device) {
-      const type = (device.type ?? '').toLowerCase()
+onMounted(() => {
+  window.addEventListener('keydown', onKeydown)
+})
 
-      if (type.includes('tv') || type.includes('chromecast')) {
-        return ['fas', 'tv']
-      }
-
-      if (type.includes('speaker') || type.includes('audio')) {
-        return ['fas', 'volume-high']
-      }
-
-      if (type.includes('phone') || type.includes('mobile')) {
-        return ['fas', 'mobile']
-      }
-
-      return ['fas', 'display']
-    }
-
-    return {
-      castStore,
-      popoverStyle,
-      arrowStyle,
-      handleDeviceClick,
-      retry,
-      stopCasting,
-      closeCastPopover,
-      deviceIcon,
-    }
-  },
+onUnmounted(() => {
+  window.removeEventListener('keydown', onKeydown)
 })
 </script>
 
