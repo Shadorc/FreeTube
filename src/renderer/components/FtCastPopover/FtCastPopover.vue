@@ -121,7 +121,6 @@ const isOpen = computed(() => store.getters.getCastPopoverOpen)
 const isDiscovering = computed(() => store.getters.getCastDiscovering)
 const devices = computed(() => store.getters.getCastDevices)
 const activeDeviceId = computed(() => store.getters.getActiveDeviceId)
-const activeDeviceName = computed(() => store.getters.getActiveDeviceName)
 const error = computed(() => store.getters.getCastError)
 const anchorRect = computed(() => store.getters.getCastAnchorRect)
 

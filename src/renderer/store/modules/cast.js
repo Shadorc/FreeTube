@@ -53,7 +53,7 @@ const getters = {
 }
 
 const actions = {
-  ensureCastDiscoveryListener({ commit }) {
+  async openCastPopover({ commit }, anchorRect) {
     if (process.env.IS_ELECTRON) {
       window.ftElectron.handleCastDeviceDiscovered((device) => {
         if (!device) {
@@ -64,10 +64,6 @@ const actions = {
         commit('setCastDiscovering', false)
       })
     }
-  },
-
-  async openCastPopover({ commit, dispatch }, anchorRect) {
-    dispatch('ensureCastDiscoveryListener')
 
     commit('setCastAnchorRect', anchorRect)
     commit('setCastPopoverOpen', true)
@@ -84,7 +80,7 @@ const actions = {
     }, 5500)
   },
 
-  async connectToDevice({ commit, state }, device) {
+  async connectToDevice({ commit, dispatch, state }, device) {
     commit('setCastError', null)
 
     try {
@@ -130,14 +126,10 @@ const actions = {
     commit('setCastVideoTitle', title)
   },
 
-  dispatchCastStatusChanged(context) {
-    const isCasting = context.state.activeDeviceId != null
-    document.dispatchEvent(new CustomEvent('ft-caststatuschanged', {
-      detail: {
-        isCasting,
-        deviceName: context.state.activeDeviceName
-      }
-    }))
+  dispatchCastStatusChanged({ state }) {
+    const isCasting = state.activeDeviceId != null
+    const deviceName = state.activeDeviceName
+    window.ftElectron.castStatusChanged(isCasting, deviceName)
   }
 }
 

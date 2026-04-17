@@ -1928,6 +1928,14 @@ function runApp() {
   /** @type {Map<number, { sessionUrl: string | null, deviceId: string }>} */
   const activeCastSessions = new Map()
 
+  ipcMain.on(IpcChannels.CAST_STATUS_CHANGED, (event, isCasting, deviceName) => {
+    if (!isFreeTubeUrl(event.senderFrame.url)) {
+      return
+    }
+
+    event.sender.send(IpcChannels.CAST_STATUS_CHANGED, isCasting, deviceName)
+  })
+
   ipcMain.on(IpcChannels.DISCOVER_CAST_DEVICES, (event) => {
     if (!isFreeTubeUrl(event.senderFrame.url)) {
       return

@@ -41,7 +41,7 @@ export class CastButton extends shaka.ui.Element {
 
     // listeners
 
-    this.eventManager.listen(document, 'ft-caststatuschanged', () => {
+    window.ftElectron.handleCastStatusChanged(({ isCasting, deviceName }) => {
       this.updateLocalisedStrings_()
     })
 

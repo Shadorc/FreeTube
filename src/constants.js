@@ -50,6 +50,7 @@ const IpcChannels = {
 
   DISCOVER_CAST_DEVICES: 'discover-cast-devices',
   CAST_DEVICE_DISCOVERED: 'cast-device-discovered',
+  CAST_STATUS_CHANGED: 'cast-status-changed',
   CONNECT_CAST_DEVICE: 'connect-cast-device',
   STOP_CASTING: 'stop-casting'
 }
