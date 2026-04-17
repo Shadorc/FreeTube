@@ -38,8 +38,8 @@ function dialRequest(url, { method, body, headers = {} }) {
   })
 }
 
-export async function launchYouTubeApp(device, videoId) {
-  if (typeof device?.applicationUrl !== 'string' || device.applicationUrl.length === 0) {
+export async function launchYouTubeApp(deviceApplicationUrl, videoId) {
+  if (typeof deviceApplicationUrl !== 'string' || deviceApplicationUrl.length === 0) {
     throw new Error('Cast device does not expose an application URL')
   }
 
@@ -47,7 +47,7 @@ export async function launchYouTubeApp(device, videoId) {
     throw new Error('No video ID available to cast')
   }
 
-  const appUrl = new URL('YouTube', ensureTrailingSlash(device.applicationUrl)).toString()
+  const appUrl = new URL('YouTube', ensureTrailingSlash(deviceApplicationUrl)).toString()
   const body = new URLSearchParams({ v: videoId }).toString()
 
   const response = await dialRequest(appUrl, {

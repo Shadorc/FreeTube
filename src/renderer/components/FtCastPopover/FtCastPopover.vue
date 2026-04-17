@@ -23,11 +23,6 @@
           <span class="cast-popover__title">
             {{ $t('Video.Player.Select a device') }}
           </span>
-          <span
-            v-if="isDiscovering"
-            class="cast-popover__spinner"
-            aria-hidden="true"
-          />
         </div>
 
         <div
@@ -47,7 +42,7 @@
         </div>
 
         <div
-          v-else-if="!isDiscovering && devices.length === 0"
+          v-else-if="devices.length === 0"
           class="cast-popover__status cast-popover__status--empty"
         >
           <font-awesome-icon :icon="['fas', 'tv']" />
@@ -118,7 +113,6 @@ import { computed, onMounted, onUnmounted } from 'vue'
 import store from '../../store/index'
 
 const isOpen = computed(() => store.getters.getCastPopoverOpen)
-const isDiscovering = computed(() => store.getters.getCastDiscovering)
 const devices = computed(() => store.getters.getCastDevices)
 const activeDeviceId = computed(() => store.getters.getActiveDeviceId)
 const error = computed(() => store.getters.getCastError)

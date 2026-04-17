@@ -28,7 +28,7 @@ import packageDetails from '../../package.json'
 import { handleOpenInExternalPlayer } from './externalPlayer'
 import { generatePoToken } from './poTokenGenerator'
 import { isFreeTubeUrl } from './utils'
-import SSDPDeviceScanner from './cast/ssdpDevicesDiscovery.js'
+import SSDPDeviceScanner from './ssdpDevicesDiscovery.js'
 import { launchYouTubeApp, stopDialApp } from './cast/dialClient.js'
 
 const brotliDecompressAsync = promisify(brotliDecompress)
@@ -1949,7 +1949,7 @@ function runApp() {
     scanner.startScan()
   })
 
-  ipcMain.handle(IpcChannels.CONNECT_CAST_DEVICE, async (event, device, videoId) => {
+  ipcMain.handle(IpcChannels.CONNECT_CAST_DEVICE, async (event, data) => {
     if (!isFreeTubeUrl(event.senderFrame.url)) {
       return
     }
@@ -1960,11 +1960,11 @@ function runApp() {
       await stopDialApp(existingSession.sessionUrl)
     }
 
-    const { sessionUrl } = await launchYouTubeApp(device, videoId)
+    const { sessionUrl } = await launchYouTubeApp(data.deviceApplicationUrl, data.videoId)
 
     activeCastSessions.set(event.sender.id, {
       sessionUrl,
-      deviceId: device.id
+      deviceId: data.deviceId
     })
 
     return { sessionUrl }

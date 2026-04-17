@@ -227,12 +227,19 @@ export default {
     ipcRenderer.send(IpcChannels.DISCOVER_CAST_DEVICES)
   },
 
+  /**
+   * @param {boolean} isCasting
+   * @param {string} deviceName
+   */
   castStatusChanged: (isCasting, deviceName) => {
     ipcRenderer.send(IpcChannels.CAST_STATUS_CHANGED, isCasting, deviceName)
   },
 
-  connectCastDevice: (device, videoId) => {
-    return ipcRenderer.invoke(IpcChannels.CONNECT_CAST_DEVICE, device, videoId)
+  /**
+   * @param {any} data
+   */
+  connectCastDevice: (data) => {
+    return ipcRenderer.invoke(IpcChannels.CONNECT_CAST_DEVICE, data)
   },
 
   stopCasting: () => {

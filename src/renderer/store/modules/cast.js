@@ -1,6 +1,5 @@
 const state = {
   isOpen: false,
-  isDiscovering: false,
   devices: [],
   activeDeviceId: null,
   activeDeviceName: null,
@@ -13,10 +12,6 @@ const state = {
 const getters = {
   getCastPopoverOpen(state) {
     return state.isOpen
-  },
-
-  getCastDiscovering(state) {
-    return state.isDiscovering
   },
 
   getCastDevices(state) {
@@ -55,13 +50,13 @@ const getters = {
 const actions = {
   async openCastPopover({ commit }, anchorRect) {
     if (process.env.IS_ELECTRON) {
+      // TODO: Register only once
       window.ftElectron.handleCastDeviceDiscovered((device) => {
         if (!device) {
           return
         }
 
         commit('addCastDevice', device)
-        commit('setCastDiscovering', false)
       })
     }
 
@@ -69,15 +64,10 @@ const actions = {
     commit('setCastPopoverOpen', true)
     commit('setCastError', null)
     commit('setCastDevices', [])
-    commit('setCastDiscovering', true)
 
     if (process.env.IS_ELECTRON) {
       window.ftElectron.discoverCastDevice()
     }
-
-    setTimeout(() => {
-      commit('setCastDiscovering', false)
-    }, 5500)
   },
 
   async connectToDevice({ commit, dispatch, state }, device) {
@@ -89,7 +79,10 @@ const actions = {
       }
 
       if (process.env.IS_ELECTRON) {
-        await window.ftElectron.connectCastDevice(device, state.videoId)
+        const deviceId = device.id
+        const deviceApplicationUrl = device.applicationUrl
+        const videoId = state.videoId
+        await window.ftElectron.connectCastDevice({ deviceId, deviceApplicationUrl, videoId })
       }
       commit('setActiveDevice', { id: device.id, name: device.name })
       commit('setCastPopoverOpen', false)
@@ -136,10 +129,6 @@ const actions = {
 const mutations = {
   setCastPopoverOpen(state, value) {
     state.isOpen = value
-  },
-
-  setCastDiscovering(state, value) {
-    state.isDiscovering = value
   },
 
   addCastDevice(state, device) {
