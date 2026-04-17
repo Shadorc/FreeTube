@@ -1,5 +1,4 @@
 import dgram from 'node:dgram'
-import http from 'node:http'
 
 const SSDP_MULTICAST_ADDRESS = '239.255.255.250'
 const SSDP_MULTICAST_PORT = 1900
@@ -24,32 +23,20 @@ class SSDPDeviceScanner {
 
   /** @private */
   async fetchDeviceDescription_(url) {
-    return new Promise((resolve) => {
-      const request = http.get(
-        url,
-        { timeout: SSDP_RESPONSE_TIMEOUT_MS },
-        (response) => {
-          let data = ''
-
-          response.on('data', (chunk) => {
-            data += chunk
-          })
-
-          response.on('end', () => {
-            resolve(data)
-          })
-        }
-      )
-
-      request.on('error', () => {
-        resolve(null)
-      })
-
-      request.on('timeout', () => {
-        request.destroy()
-        resolve(null)
-      })
-    })
+    try {
+      const timeoutSignal = AbortSignal.timeout(SSDP_RESPONSE_TIMEOUT_MS)
+      const init = {
+        signal: timeoutSignal
+      }
+      const response = await fetch(url, init)
+      if (response.status !== 200) {
+        return null
+      }
+      const text = await response.text()
+      return text
+    } catch {
+      return null
+    }
   }
 
   /** @private */
