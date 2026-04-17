@@ -54,19 +54,16 @@ const getters = {
 
 const actions = {
   ensureCastDiscoveryListener({ commit }) {
-    if (!window.ftElectron) {
-      console.warn('[castStore] ftElectron not available')
-      return
+    if (process.env.IS_ELECTRON) {
+      window.ftElectron.handleCastDeviceDiscovered((device) => {
+        if (!device) {
+          return
+        }
+
+        commit('addCastDevice', device)
+        commit('setCastDiscovering', false)
+      })
     }
-
-    window.ftElectron.handleCastDeviceDiscovered((device) => {
-      if (!device) {
-        return
-      }
-
-      commit('addCastDevice', device)
-      commit('setCastDiscovering', false)
-    })
   },
 
   async openCastPopover({ commit, dispatch }, anchorRect) {
@@ -78,7 +75,7 @@ const actions = {
     commit('setCastDevices', [])
     commit('setCastDiscovering', true)
 
-    if (window.ftElectron) {
+    if (process.env.IS_ELECTRON) {
       window.ftElectron.discoverCastDevice()
     }
 
@@ -95,13 +92,15 @@ const actions = {
         throw new Error('No video is available to cast')
       }
 
-      await window.ftElectron.connectCastDevice(device, state.videoId)
+      if (process.env.IS_ELECTRON) {
+        await window.ftElectron.connectCastDevice(device, state.videoId)
+      }
       commit('setActiveDevice', { id: device.id, name: device.name })
       commit('setCastPopoverOpen', false)
       dispatch('dispatchCastStatusChanged')
     } catch (err) {
+      console.error(err)
       const errorMessage = err?.message ?? 'Connection failed'
-      console.error('[castStore] Cast connection failed:', errorMessage)
       commit('setCastError', errorMessage)
     }
   },
@@ -110,12 +109,14 @@ const actions = {
     commit('setCastError', null)
 
     try {
-      await window.ftElectron.stopCasting()
+      if (process.env.IS_ELECTRON) {
+        await window.ftElectron.stopCasting()
+      }
       commit('clearActiveDevice')
       dispatch('dispatchCastStatusChanged')
     } catch (err) {
+      console.error(err)
       const errorMessage = err?.message ?? 'Stop failed'
-      console.error('[castStore] Stop cast failed:', errorMessage)
       commit('setCastError', errorMessage)
     }
   },
