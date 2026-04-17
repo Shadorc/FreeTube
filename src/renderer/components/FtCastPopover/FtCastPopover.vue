@@ -1,19 +1,17 @@
 <template>
   <Teleport to="body">
-    <!-- Backdrop (click-outside) -->
     <Transition name="cast-backdrop">
       <button
-        v-if="castStore.isOpen"
+        v-if="isOpen"
         type="button"
         class="cast-popover__backdrop"
         @click="closeCastPopover"
       />
     </Transition>
 
-    <!-- Floating popover -->
     <Transition name="cast-sheet">
       <div
-        v-if="castStore.isOpen"
+        v-if="isOpen"
         ref="popoverRef"
         class="cast-popover"
         :style="popoverStyle"
@@ -21,25 +19,23 @@
         aria-modal="false"
         :aria-label="$t('Video.Player.Cast to TV')"
       >
-        <!-- Title row -->
         <div class="cast-popover__header">
           <span class="cast-popover__title">
             {{ $t('Video.Player.Select a device') }}
           </span>
           <span
-            v-if="castStore.isDiscovering"
+            v-if="isDiscovering"
             class="cast-popover__spinner"
             aria-hidden="true"
           />
         </div>
 
-        <!-- Error -->
         <div
-          v-if="castStore.error"
+          v-if="error"
           class="cast-popover__status cast-popover__status--error"
         >
           <font-awesome-icon :icon="['fas', 'circle-exclamation']" />
-          {{ castStore.error }}
+          {{ error }}
           <button
             class="cast-popover__retry"
             :aria-label="$t('Video.Player.Retry')"
@@ -50,9 +46,8 @@
           </button>
         </div>
 
-        <!-- Empty -->
         <div
-          v-else-if="!castStore.isDiscovering && castStore.devices.length === 0"
+          v-else-if="!isDiscovering && devices.length === 0"
           class="cast-popover__status cast-popover__status--empty"
         >
           <font-awesome-icon :icon="['fas', 'tv']" />
@@ -67,19 +62,18 @@
           </button>
         </div>
 
-        <!-- Device list -->
         <ul
           v-else
           class="cast-popover__list"
           role="listbox"
         >
           <li
-            v-for="device in castStore.devices"
+            v-for="device in devices"
             :key="device.id"
             class="cast-popover__item"
-            :class="{ 'cast-popover__item--active': castStore.activeDeviceId === device.id }"
+            :class="{ 'cast-popover__item--active': activeDeviceId === device.id }"
             role="option"
-            :aria-selected="castStore.activeDeviceId === device.id"
+            :aria-selected="activeDeviceId === device.id"
             tabindex="0"
             @click="handleDeviceClick(device)"
             @keydown.enter.space.prevent="handleDeviceClick(device)"
@@ -92,7 +86,7 @@
             </span>
             <span class="cast-popover__device-name">{{ device.name }}</span>
             <span
-              v-if="castStore.activeDeviceId === device.id"
+              v-if="activeDeviceId === device.id"
               class="cast-popover__active-badge"
               :aria-label="$t('Video.Player.Connected')"
               :title="$t('Video.Player.Connected')"
@@ -102,9 +96,8 @@
           </li>
         </ul>
 
-        <!-- Stop casting footer -->
         <div
-          v-if="castStore.activeDeviceId"
+          v-if="activeDeviceId"
           class="cast-popover__footer"
         >
           <button
@@ -122,20 +115,21 @@
 
 <script setup>
 import { computed, onMounted, onUnmounted } from 'vue'
-import {
-  castStore,
-  openCastPopover,
-  connectToDevice,
-  stopCasting as doStop,
-  closeCastPopover,
-} from '../ft-shaka-video-player/player-components/castStore'
+import store from '../../store/index'
+
+const isOpen = computed(() => store.getters.getCastPopoverOpen)
+const isDiscovering = computed(() => store.getters.getCastDiscovering)
+const devices = computed(() => store.getters.getCastDevices)
+const activeDeviceId = computed(() => store.getters.getActiveDeviceId)
+const activeDeviceName = computed(() => store.getters.getActiveDeviceName)
+const error = computed(() => store.getters.getCastError)
+const anchorRect = computed(() => store.getters.getCastAnchorRect)
 
 const POPOVER_WIDTH = 300
 const POPOVER_OFFSET = 12
 
-// Position the popover above the anchor button, centred on it
 const popoverStyle = computed(() => {
-  const rect = castStore.anchorRect
+  const rect = anchorRect.value
   if (!rect) {
     return { display: 'none' }
   }
@@ -156,23 +150,27 @@ const popoverStyle = computed(() => {
 })
 
 async function handleDeviceClick(device) {
-  if (castStore.activeDeviceId === device.id) {
-    await doStop()
+  if (activeDeviceId.value === device.id) {
+    await store.dispatch('stopCasting')
   } else {
-    await connectToDevice(device)
+    await store.dispatch('connectToDevice', device)
   }
 }
 
 async function retry() {
-  await openCastPopover(castStore.anchorRect)
+  await store.dispatch('openCastPopover', anchorRect)
 }
 
 async function stopCasting() {
-  await doStop()
+  await store.dispatch('stopCasting')
+}
+
+function closeCastPopover() {
+  store.dispatch('closeCastPopover')
 }
 
 function onKeydown(e) {
-  if (e.key === 'Escape' && castStore.isOpen) {
+  if (e.key === 'Escape' && isOpen.value) {
     closeCastPopover()
   }
 }

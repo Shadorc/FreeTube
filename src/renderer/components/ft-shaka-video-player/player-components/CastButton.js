@@ -2,7 +2,7 @@ import shaka from 'shaka-player'
 
 import i18n from '../../../i18n/index'
 import { PlayerIcons } from '../../../../constants'
-import { castStore, openCastPopover, stopCasting } from './castStore'
+import store from '../../../store'
 
 export class CastButton extends shaka.ui.Element {
   /**
@@ -46,11 +46,11 @@ export class CastButton extends shaka.ui.Element {
     })
 
     this.eventManager.listen(this.button_, 'click', async () => {
-      if (castStore.activeDeviceId) {
-        await stopCasting()
+      if (store.getters.getActiveDeviceId) {
+        await store.dispatch('stopCasting')
       } else {
         const rect = this.button_.getBoundingClientRect()
-        await openCastPopover(rect)
+        await store.dispatch('openCastPopover', rect)
       }
     })
 
@@ -75,12 +75,12 @@ export class CastButton extends shaka.ui.Element {
   updateLocalisedStrings_() {
     this.nameSpan_.textContent = i18n.global.t('Video.Player.Cast')
 
-    const isCasting = castStore.activeDeviceId != null
+    const isCasting = store.getters.getActiveDeviceId != null
 
     this.icon_.use(isCasting ? PlayerIcons.CAST_CONNECTED : PlayerIcons.CAST)
 
     this.currentState_.textContent = isCasting
-      ? castStore.activeDeviceName
+      ? store.getters.getActiveDeviceName
       : this.localization.resolve('OFF')
 
     this.button_.ariaLabel = isCasting

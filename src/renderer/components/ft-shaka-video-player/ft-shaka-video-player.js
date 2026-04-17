@@ -13,7 +13,6 @@ import { TheatreModeButton } from './player-components/TheatreModeButton'
 import { AutoplayToggle } from './player-components/AutoplayToggle'
 import { CastButton } from './player-components/CastButton'
 import { SkipButton } from './player-components/SkipButton'
-import { setCastMediaDetails } from './player-components/castStore'
 import {
   deduplicateAudioTracks,
   findMostSimilarAudioBandwidth,
@@ -224,7 +223,7 @@ export default defineComponent({
     watch(
       () => [props.videoId, props.title],
       ([videoId, title]) => {
-        setCastMediaDetails({ videoId, title })
+        store.dispatch('setCastMediaDetails', { videoId, title })
       },
       { immediate: true }
     )
