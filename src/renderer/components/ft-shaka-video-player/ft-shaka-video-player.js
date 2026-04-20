@@ -221,9 +221,9 @@ export default defineComponent({
     const showStats = ref(false)
 
     watch(
-      () => [props.videoId, props.title],
-      ([videoId, title]) => {
-        store.dispatch('setCastMediaDetails', { videoId, title })
+      () => [props.sabrData.url, props.title],
+      ([videoUrl, title]) => {
+        store.dispatch('setCastMediaDetails', { videoUrl, title })
       },
       { immediate: true }
     )
@@ -842,7 +842,7 @@ export default defineComponent({
           'ft_screenshot',
           'picture_in_picture',
           'ft_full_window',
-          ...(enableCastPlayer.value ? ['ft_cast'] : []),
+          'ft_cast',
           'recenter_vr',
           'toggle_stereoscopic',
         ]
@@ -858,7 +858,7 @@ export default defineComponent({
           'picture_in_picture',
           'ft_theatre_mode',
           'ft_full_window',
-          ...(enableCastPlayer.value ? ['ft_cast'] : []),
+          'ft_cast',
           'fullscreen'
         )
 
@@ -898,6 +898,10 @@ export default defineComponent({
       if (!useVrMode.value) {
         removeFromArrayIfExists(uiConfig.overflowMenuButtons, 'recenter_vr')
         removeFromArrayIfExists(uiConfig.overflowMenuButtons, 'toggle_stereoscopic')
+      }
+
+      if (!enableCastPlayer.value) {
+        removeFromArrayIfExists(elementList, 'ft_cast')
       }
 
       return uiConfig

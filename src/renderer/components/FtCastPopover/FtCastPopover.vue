@@ -77,7 +77,7 @@
               class="cast-popover__device-icon"
               aria-hidden="true"
             >
-              <font-awesome-icon :icon="deviceIcon(device)" />
+              <font-awesome-icon :icon="['fas', 'display']" />
             </span>
             <span class="cast-popover__device-name">{{ device.name }}</span>
             <span
@@ -166,28 +166,6 @@ function onKeydown(e) {
   if (e.key === 'Escape' && isOpen.value) {
     closeCastPopover()
   }
-}
-
-/**
- * @param {object} device - The device object
- * @returns {string[]} - Font Awesome icon array [family, name]
- */
-function deviceIcon(device) {
-  const type = (device.type ?? '').toLowerCase()
-
-  if (type.includes('tv') || type.includes('chromecast')) {
-    return ['fas', 'tv']
-  }
-
-  if (type.includes('speaker') || type.includes('audio')) {
-    return ['fas', 'volume-high']
-  }
-
-  if (type.includes('phone') || type.includes('mobile')) {
-    return ['fas', 'mobile']
-  }
-
-  return ['fas', 'display']
 }
 
 onMounted(() => {

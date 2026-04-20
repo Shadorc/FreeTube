@@ -1,92 +1,42 @@
-import http from 'node:http'
-import https from 'node:https'
+import { Client, DefaultMediaReceiver } from 'castv2-client'
 
-function dialRequest(url, { method, body, headers = {} }) {
-  return new Promise((resolve, reject) => {
-    const target = new URL(url)
-    const transport = target.protocol === 'https:' ? https : http
+const client = new Client()
 
-    const request = transport.request(target, {
-      method,
-      headers,
-    }, (response) => {
-      const chunks = []
+export async function startCast(deviceAddress, videoUrl) {
+  client.connect(deviceAddress, () => {
+    client.launch(DefaultMediaReceiver, (err, player) => {
+      if (err) {
+        console.error('[CAST V2] Launch error:', err)
+        client.close()
+        return
+      }
 
-      response.on('data', (chunk) => {
-        chunks.push(chunk)
-      })
+      const media = {
+        contentId: videoUrl,
+        contentType: 'video/mp4',
+        streamType: 'BUFFERED',
+        metadata: {
+          type: 0,
+          metadataType: 0,
+          title: 'FreeTube Cast Test',
+        }
+      }
 
-      response.on('end', () => {
-        resolve({
-          statusCode: response.statusCode ?? 0,
-          headers: response.headers,
-          body: Buffer.concat(chunks).toString('utf8')
-        })
+      player.load(media, { autoplay: true }, (err, status) => {
+        if (err) {
+          console.error('[CAST V2] Load error:', err)
+          client.close()
+        }
       })
     })
 
-    request.on('error', reject)
-    request.setTimeout(5000, () => {
-      request.destroy(new Error('DIAL request timed out'))
+    client.on('error', function (err) {
+      console.error(err)
+      client.close()
     })
-
-    if (body) {
-      request.write(body)
-    }
-
-    request.end()
   })
 }
 
-export async function launchYouTubeApp(deviceApplicationUrl, videoId) {
-  if (typeof deviceApplicationUrl !== 'string' || deviceApplicationUrl.length === 0) {
-    throw new Error('Cast device does not expose an application URL')
-  }
-
-  if (typeof videoId !== 'string' || videoId.length === 0) {
-    throw new Error('No video ID available to cast')
-  }
-
-  const appUrl = new URL('YouTube', ensureTrailingSlash(deviceApplicationUrl)).toString()
-  const body = new URLSearchParams({ v: videoId }).toString()
-
-  const response = await dialRequest(appUrl, {
-    method: 'POST',
-    body,
-    headers: {
-      'Content-Type': 'text/plain; charset=utf-8',
-      'Content-Length': Buffer.byteLength(body),
-    }
-  })
-
-  if (response.statusCode < 200 || response.statusCode >= 300) {
-    throw new Error(`Failed to launch YouTube on cast device (${response.statusCode})`)
-  }
-
-  const location = response.headers.location
-
-  return {
-    appUrl,
-    sessionUrl: typeof location === 'string' && location.length > 0
-      ? new URL(location, appUrl).toString()
-      : null
-  }
-}
-
-export async function stopDialApp(sessionUrl) {
-  if (typeof sessionUrl !== 'string' || sessionUrl.length === 0) {
-    return
-  }
-
-  const response = await dialRequest(sessionUrl, {
-    method: 'DELETE'
-  })
-
-  if (response.statusCode < 200 || response.statusCode >= 300) {
-    throw new Error(`Failed to stop cast session (${response.statusCode})`)
-  }
-}
-
-function ensureTrailingSlash(url) {
-  return url.endsWith('/') ? url : `${url}/`
+export function stopCast() {
+  client.close()
 }

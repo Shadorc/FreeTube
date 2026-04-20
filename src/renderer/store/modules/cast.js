@@ -4,7 +4,7 @@ const state = {
   activeDeviceId: null,
   activeDeviceName: null,
   error: null,
-  videoId: null,
+  videoUrl: null,
   videoTitle: null,
   anchorRect: null
 }
@@ -30,20 +30,8 @@ const getters = {
     return state.error
   },
 
-  getCastVideoId(state) {
-    return state.videoId
-  },
-
-  getCastVideoTitle(state) {
-    return state.videoTitle
-  },
-
   getCastAnchorRect(state) {
     return state.anchorRect
-  },
-
-  getIsCasting(state) {
-    return state.activeDeviceId != null
   }
 }
 
@@ -74,15 +62,10 @@ const actions = {
     commit('setCastError', null)
 
     try {
-      if (typeof state.videoId !== 'string' || state.videoId.length === 0) {
-        throw new Error('No video is available to cast')
-      }
-
       if (process.env.IS_ELECTRON) {
-        const deviceId = device.id
-        const deviceApplicationUrl = device.applicationUrl
-        const videoId = state.videoId
-        await window.ftElectron.connectCastDevice({ deviceId, deviceApplicationUrl, videoId })
+        const deviceAddress = device.address
+        const videoUrl = state.videoUrl
+        await window.ftElectron.connectCastDevice({ deviceAddress, videoUrl })
       }
       commit('setActiveDevice', { id: device.id, name: device.name })
       commit('setCastPopoverOpen', false)
@@ -114,8 +97,8 @@ const actions = {
     commit('setCastPopoverOpen', false)
   },
 
-  setCastMediaDetails({ commit }, { videoId, title }) {
-    commit('setCastVideoId', videoId)
+  setCastMediaDetails({ commit }, { videoUrl, title }) {
+    commit('setCastVideoUrl', videoUrl)
     commit('setCastVideoTitle', title)
   },
 
@@ -155,8 +138,8 @@ const mutations = {
     state.error = value
   },
 
-  setCastVideoId(state, value) {
-    state.videoId = typeof value === 'string' && value.length > 0 ? value : null
+  setCastVideoUrl(state, value) {
+    state.videoUrl = typeof value === 'string' && value.length > 0 ? value : null
   },
 
   setCastVideoTitle(state, value) {

@@ -99,9 +99,7 @@ class SSDPDeviceScanner {
       id: locationUrl,
       address: remoteInfo.address,
       location: locationUrl,
-      applicationUrl: headers['APPLICATION-URL'] ?? null,
       name: friendlyName ?? remoteInfo.address,
-      type: headers.SERVER ?? headers.ST ?? 'cast-device'
     }
 
     if (this.onDeviceDiscovered) {

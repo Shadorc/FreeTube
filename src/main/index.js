@@ -29,7 +29,7 @@ import { handleOpenInExternalPlayer } from './externalPlayer'
 import { generatePoToken } from './poTokenGenerator'
 import { isFreeTubeUrl } from './utils'
 import SSDPDeviceScanner from './ssdpDevicesDiscovery.js'
-import { launchYouTubeApp, stopDialApp } from './cast/dialClient.js'
+import { startCast } from './cast/dialClient.js'
 
 const brotliDecompressAsync = promisify(brotliDecompress)
 
@@ -1954,6 +1954,9 @@ function runApp() {
       return
     }
 
+    await startCast(data.deviceAddress, data.videoUrl)
+
+    /*
     const existingSession = activeCastSessions.get(event.sender.id)
 
     if (existingSession?.sessionUrl) {
@@ -1968,6 +1971,7 @@ function runApp() {
     })
 
     return { sessionUrl }
+    */
   })
 
   ipcMain.handle(IpcChannels.STOP_CASTING, async (event) => {
