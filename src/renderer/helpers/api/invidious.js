@@ -34,6 +34,39 @@ export function getProxyUrl(uri) {
 }
 
 /**
+ * @param {string} url
+ */
+export async function isValidInvidiousUrl(url) {
+  if (!/^https?:\/\//.test(url)) {
+    return false
+  }
+
+  try {
+    const statsPayload = {
+      url: url,
+      resource: 'stats',
+      doLogError: false
+    }
+    await invidiousAPICall(statsPayload)
+  } catch {
+    return false
+  }
+
+  try {
+    const trendingPayload = {
+      url: url,
+      resource: 'trending',
+      doLogError: false
+    }
+    await invidiousAPICall(trendingPayload)
+  } catch {
+    return false
+  }
+
+  return true
+}
+
+/**
  * @param {string | URL} url
  */
 export function invidiousFetch(url) {
@@ -50,9 +83,9 @@ export function invidiousFetch(url) {
   }
 }
 
-function invidiousAPICall({ resource, id = '', params = {}, doLogError = true, subResource = '' }) {
+function invidiousAPICall({ url, resource, id = '', params = {}, doLogError = true, subResource = '' }) {
   return new Promise((resolve, reject) => {
-    const requestUrl = getCurrentInstanceUrl() + '/api/v1/' + resource + '/' + id + (!isNullOrEmpty(subResource) ? `/${subResource}` : '') + '?' + new URLSearchParams(params).toString()
+    const requestUrl = (url ?? getCurrentInstanceUrl()) + '/api/v1/' + resource + '/' + id + (!isNullOrEmpty(subResource) ? `/${subResource}` : '') + '?' + new URLSearchParams(params).toString()
     invidiousFetch(requestUrl)
       .then((response) => response.json())
       .then((json) => {

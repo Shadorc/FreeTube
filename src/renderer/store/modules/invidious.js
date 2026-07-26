@@ -1,3 +1,4 @@
+import { isValidInvidiousUrl } from '../../helpers/api/invidious'
 import { base64EncodeUtf8, createWebURL, fetchWithTimeout, randomArrayItem } from '../../helpers/utils'
 
 const state = {
@@ -36,7 +37,15 @@ const actions = {
       return e.url
     })
 
-    commit('setInvidiousInstancesList', instances)
+    const validations = await Promise.all(
+      instances.map(instance => isValidInvidiousUrl(instance).then(isValid => ({ instance, isValid })))
+    )
+
+    const validInstances = validations
+      .filter(({ isValid }) => isValid)
+      .map(({ instance }) => instance)
+
+    commit('setInvidiousInstancesList', validInstances)
   },
 
   /// fetch invidious instances from site and overwrite static file.
@@ -45,7 +54,7 @@ const actions = {
     try {
       const response = await fetchWithTimeout(15_000, requestUrl)
       const json = await response.json()
-      const instances = json.filter((instance) => {
+      const instances = await json.filter((instance) => {
         return !(instance[0].includes('.onion') ||
           instance[0].includes('.i2p') ||
           !instance[1].api ||
@@ -54,10 +63,18 @@ const actions = {
         return instance[1].uri.replace(/\/$/, '')
       })
 
-      if (instances.length !== 0) {
-        commit('setInvidiousInstancesList', instances)
+      const validations = await Promise.all(
+        instances.map(instance => isValidInvidiousUrl(instance).then(isValid => ({ instance, isValid })))
+      )
+
+      const validInstances = validations
+        .filter(({ isValid }) => isValid)
+        .map(({ instance }) => instance)
+
+      if (validInstances.length !== 0) {
+        commit('setInvidiousInstancesList', validInstances)
       } else {
-        console.warn('using static file for invidious instances')
+        console.warn('No reachable invidious instances from ' + requestUrl + ', using static file')
       }
     } catch (err) {
       if (err.name === 'TimeoutError') {
