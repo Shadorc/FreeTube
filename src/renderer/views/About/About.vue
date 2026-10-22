@@ -75,7 +75,7 @@ const chunks = computed(() => [
     content: [
       `<a href="https://docs.freetubeapp.io/">${t('About.FreeTube Wiki')}</a>`,
       `<a href="https://docs.freetubeapp.io/faq/">${t('About.FAQ')}</a>`,
-      `<a href="https://github.com/FreeTubeApp/FreeTube/discussions/">${t('About.Discussions')}</a>`
+      `<a href="https://github.com/FreeTubeApp/FreeTube/discussions">${t('About.Discussions')}</a>`
     ].join(' / '),
   },
   {
