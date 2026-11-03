@@ -1,5 +1,24 @@
 <template>
   <div class="select">
+    <div class="select-header">
+      <label
+        v-if="!disabled"
+        class="select-label"
+        :for="id"
+      >
+        <FontAwesomeIcon
+            :icon="icon"
+            class="select-icon"
+            :color="iconColor"
+        />
+        {{ placeholder }}
+      </label>
+      <FtTooltip
+        v-if="tooltip !== ''"
+        class="select-tooltip"
+        :tooltip="tooltip"
+      />
+    </div>
     <select
       :id="id"
       :aria-describedby="describeById"
@@ -22,27 +41,10 @@
     </select>
     <FontAwesomeIcon
       :icon="['fas', 'sort-down']"
-      class="iconSelect"
+      class="select-down-icon"
     />
     <span class="select-highlight" />
     <span class="select-bar" />
-    <label
-      v-if="!disabled"
-      class="select-label"
-      :for="id"
-    >
-      <FontAwesomeIcon
-        :icon="icon"
-        class="select-icon"
-        :color="iconColor"
-      />
-      {{ placeholder }}
-    </label>
-    <FtTooltip
-      v-if="tooltip !== ''"
-      class="selectTooltip"
-      :tooltip="tooltip"
-    />
   </div>
 </template>
 
